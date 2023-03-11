@@ -270,3 +270,4 @@ cython_debug/
 *.mp3
 *.wav
 .gitpod.yml
+STT/myapikey.json
