@@ -268,4 +268,5 @@ cython_debug/
 #.idea/
 
 *.mp3
+*.wav
 .gitpod.yml
