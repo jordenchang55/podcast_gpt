@@ -4,42 +4,40 @@ from buffer import TestBuffer
 from client import ChatClient
 
 
-def read_response(client: ChatClient, event):
+def read_response(client: ChatClient, stop_event):
     print("Started listening response on %s" % client)
     while True:
-        if event.is_set():
+        if stop_event.is_set():
             break
-        if client.staged_response:
-            print(client.staged_response)
-            client.reset_response()
+        if client.peek_response():
+            print(client.take_response())
 
 
 def main():
-    event = threading.Event()
+    stop_event = threading.Event()
 
     test_buffer = TestBuffer()
-    chat_client = ChatClient(test_buffer)
+    chat_client = ChatClient(test_buffer, frequency_penalty=0.1, presence_penalty=0.2)
 
-    background_thread = threading.Thread(name='background', target=chat_client.start, kwargs={"event": event})
+    background_thread = threading.Thread(name='background', target=chat_client.start, kwargs={"stop_event": stop_event})
     background_thread.start()
 
-    response_thread = threading.Thread(name='response', target=read_response, args=[chat_client, event])
+    response_thread = threading.Thread(name='response', target=read_response, args=[chat_client, stop_event])
     response_thread.start()
 
-    print("Now let's type something or type 'exit' to finish")
+    print("Now let's type something or command below:\n"
+          "1. type 'history' to list the current conversation\n"
+          "2. type 'exit' to finish")
     while True:
         text = input()
         if text == 'exit':
-            event.set()
+            stop_event.set()
             break
+        elif text == 'history':
+            chat_client.print_history()
+            continue
         test_buffer.add_text(text)
         test_buffer.set_ready_dump(True)
-
-    # try:
-    #     listening_task.cancel()
-    # except asyncio.CancelledError:
-    #     print("Listening task has been cancelled")
-    # await listening_task
 
     response_thread.join()
     background_thread.join()
