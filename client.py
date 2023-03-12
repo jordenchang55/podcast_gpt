@@ -37,7 +37,7 @@ class ChatClient:
         self.staged_response = ""
 
     def _generate_response(self, text):
-        print("Generate response for %s" % text)
+        print("Generate response for \"%s\"" % text)
         model_engine = "davinci"  # Change this to the model you want to use
         temperature = 0.5
         max_tokens = 100
