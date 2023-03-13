@@ -143,9 +143,17 @@ def main():
     language_code = "zh"  # a BCP-47 language tag
 
     # add your own google cloud speech to text api key
+<<<<<<< HEAD
     client = speech.SpeechClient.from_service_account_json(
         "STT/myapikey.json"
     )
+=======
+    # client = speech.SpeechClient.from_service_account_json(
+    #     "STT/myapikey.json"
+    # )
+    
+    client = speech.SpeechClient("AIzaSyDt0ygFqxmsu2JlPe3CeHFIEeuaS5D31SQ")
+>>>>>>> 061c018f34bc1bc5e9ca111541e4c95067ea7a1f
 
     config = speech.RecognitionConfig(
         encoding=speech.RecognitionConfig.AudioEncoding.LINEAR16,
