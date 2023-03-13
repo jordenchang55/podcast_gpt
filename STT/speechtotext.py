@@ -140,12 +140,13 @@ def listen_print_loop(responses):
 def main():
     # See http://g.co/cloud/speech/docs/languages
     # for a list of supported languages.
-    language_code = "en-US"  # a BCP-47 language tag
+    language_code = "zh"  # a BCP-47 language tag
 
     # add your own google cloud speech to text api key
     client = speech.SpeechClient.from_service_account_json(
         "STT/myapikey.json"
     )
+
     config = speech.RecognitionConfig(
         encoding=speech.RecognitionConfig.AudioEncoding.LINEAR16,
         sample_rate_hertz=RATE,
