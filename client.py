@@ -7,7 +7,7 @@ from buffer import Buffer
 
 with open('resources/openai_key.json') as f:
     data = json.load(f)
-    openai.api_key = data['api-key']
+    openai.api_key = data['GPT-api-key']
 
 
 class ChatClient:

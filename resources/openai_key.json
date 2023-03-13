@@ -1,3 +1,4 @@
 {
-  "api-key": "put your api key here to test but never commit it"
+  "GPT-api-key": "put your api key",
+  "STT-api-key": "put your api key"
 }
