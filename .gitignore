@@ -271,3 +271,4 @@ cython_debug/
 *.wav
 .gitpod.yml
 STT/myapikey.json
+# git update-index --assume-unchanged resources/openai_key.json
