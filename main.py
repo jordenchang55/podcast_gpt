@@ -28,10 +28,13 @@ def main():
     response_thread = threading.Thread(name='response', target=read_response, args=[chat_client, stop_event])
     response_thread.start()
 
-    teststring = speechstring(timeout = 120 , maximum = 200)
+    teststring = speechstring(timeout = 30 , maximum = 50)
     speech_thread = threading.Thread(name='speech', target=teststring.start)
     speech_thread.start()
-
+    
+    text:str = teststring.speechstr()
+    test_buffer.add_text(text)
+    test_buffer.set_ready_dump(True)
     print("Now let's type something or command below:\n"
           "1. type 'history' to list the current conversation\n"
           "2. type 'exit' to finish")

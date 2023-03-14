@@ -87,7 +87,7 @@ class speechstring:
     def __init__(self, timeout = 120 , maximum = 200, language_code = "zh"):
         # a BCP-47 language tag "zh" "en-US"
         self.speechstring = None
-        self.speechbuffer = None
+        self.speechbuffer = ""
         self.timeout = timeout
         self.maximum = maximum
         self.currenttime = time.time()
@@ -167,7 +167,7 @@ class speechstring:
 
             else:
                 self.makestring(transcript + overwrite_chars)
-                print(self.speechstring)
+                print(self.speechbuffer)
 
                 # Exit recognition if any of the transcribed phrases could be
                 # one of our keywords.
@@ -182,10 +182,12 @@ class speechstring:
         self.speechbuffer += string
         timeoutflag = time.time() - self.currenttime > self.timeout
         maximumflag = len(self.speechbuffer) > self.maximum
+        print(len(self.speechbuffer))
+        print(time.time() - self.currenttime)
         if timeoutflag or maximumflag:
             self.currenttime = time.time()
             self.speechstring = "toGPT:" + str(string)
-            self.speechbuffer = None
+            self.speechbuffer = ""
             print("timeout")
     
     def speechstr(self):
