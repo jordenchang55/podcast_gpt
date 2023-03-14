@@ -8,7 +8,7 @@ import time
 from google.cloud import speech
 
 import pyaudio
-from six.moves import queue
+import queue
 
 # Audio recording parameters
 RATE = 16000
@@ -88,6 +88,7 @@ class speechstring:
         # a BCP-47 language tag "zh" "en-US"
         self.speechstring = None
         self.speechbuffer = ""
+        self.block = False
         self.timeout = timeout
         self.maximum = maximum
         self.language_code = language_code
@@ -98,7 +99,6 @@ class speechstring:
             "STT/myapikey.json"
         )
 
-    def config_stream(self):
         config = speech.RecognitionConfig(
             encoding=speech.RecognitionConfig.AudioEncoding.LINEAR16,
             sample_rate_hertz=RATE,
@@ -111,19 +111,24 @@ class speechstring:
 
     def start(self):
         while True:
-            self.config_stream()
-            with MicrophoneStream(RATE, CHUNK) as stream:
-                audio_generator = stream.generator()
-                requests = (
-                    speech.StreamingRecognizeRequest(audio_content=content)
-                    for content in audio_generator
-                )
+            if self.block == False:
+                with MicrophoneStream(RATE, CHUNK) as stream:
+                    audio_generator = stream.generator()
+                    requests = (
+                        speech.StreamingRecognizeRequest(audio_content=content)
+                        for content in audio_generator
+                    )
 
-                responses = self.client.streaming_recognize(
-                    self.streaming_config, requests)
+                    responses = self.client.streaming_recognize(
+                        self.streaming_config, requests)
 
-                # Now, put the transcription responses to use.
-                self.listen_print_loop(responses)
+                    # Now, put the transcription responses to use.
+                    try:
+                        self.listen_print_loop(responses)
+                    except Exception as exception:
+                        print("stream too long, restart")
+            if self.speechbuffer == "quit":
+                break
 
     def listen_print_loop(self, responses):
         """Iterates through server responses and prints them.
@@ -168,6 +173,9 @@ class speechstring:
 
                 num_chars_printed = len(transcript)
 
+                if self.block:
+                    break
+
             else:
                 self.makestring(transcript + overwrite_chars)
                 print(self.speechbuffer)
@@ -198,3 +206,6 @@ class speechstring:
         else:
             sendstring = "test"
         return sendstring
+    
+    def blockflag(self, status):
+        self.block = status
