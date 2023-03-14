@@ -28,7 +28,7 @@ def main():
     response_thread = threading.Thread(name='response', target=read_response, args=[chat_client, stop_event])
     response_thread.start()
 
-    teststring = speechstring()
+    teststring = speechstring(timeout = 120 , maximum = 200)
     speech_thread = threading.Thread(name='speech', target=teststring.start)
     speech_thread.start()
 
