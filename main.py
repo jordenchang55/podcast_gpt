@@ -20,8 +20,9 @@ def main():
     test_buffer = TestBuffer()
     chat_client = ChatClient(test_buffer, frequency_penalty=0.1, presence_penalty=0.2)
 
+    first_message = "Hi, tell me a joke"
     background_thread = threading.Thread(name='background', target=chat_client.start, 
-                                         kwargs={"stop_event": stop_event, "system_message": "tell me a joke"})
+                                         kwargs={"stop_event": stop_event, "system_message": first_message})
     background_thread.start()
 
     response_thread = threading.Thread(name='response', target=read_response, args=[chat_client, stop_event])
@@ -52,6 +53,7 @@ def main():
 
     response_thread.join()
     background_thread.join()
+    speech_thread.join()
 
 
 if __name__ == '__main__':

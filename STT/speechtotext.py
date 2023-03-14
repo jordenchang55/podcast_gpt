@@ -84,9 +84,13 @@ class MicrophoneStream(object):
 
 
 class speechstring:
-    def __init__(self):
-        self.speechstring = "test"
-        language_code = "en-US"  # a BCP-47 language tag "zh" "en-US"
+    def __init__(self, timeout = 120 , maximum = 200, language_code = "zh"):
+        # a BCP-47 language tag "zh" "en-US"
+        self.speechstring = None
+        self.speechbuffer = None
+        self.timeout = timeout
+        self.maximum = maximum
+        self.currenttime = time.time()
 
         # add your own google cloud speech to text api key
         self.client = speech.SpeechClient.from_service_account_json(
@@ -162,7 +166,8 @@ class speechstring:
                 num_chars_printed = len(transcript)
 
             else:
-                print(transcript + overwrite_chars)
+                self.makestring(transcript + overwrite_chars)
+                print(self.speechstring)
 
                 # Exit recognition if any of the transcribed phrases could be
                 # one of our keywords.
@@ -171,9 +176,18 @@ class speechstring:
                     break
 
                 num_chars_printed = 0
-                self.speechstring = "toGPT:" + str(transcript + overwrite_chars)
-                print(self.speechstring)
 
+    def makestring(self, string):
+        # make unblock timeout
+        self.speechbuffer += string
+        timeoutflag = time.time() - self.currenttime > self.timeout
+        maximumflag = len(self.speechbuffer) > self.maximum
+        if timeoutflag or maximumflag:
+            self.currenttime = time.time()
+            self.speechstring = "toGPT:" + str(string)
+            self.speechbuffer = None
+            print("timeout")
+    
     def speechstr(self):
         # check string length
         if self.speechstring is not None:
@@ -182,40 +196,3 @@ class speechstring:
         else:
             sendstring = "test"
         return sendstring
-
-
-def main():
-    # See http://g.co/cloud/speech/docs/languages
-    # for a list of supported languages.
-    language_code = "zh"  # a BCP-47 language tag
-
-    # add your own google cloud speech to text api key
-    client = speech.SpeechClient.from_service_account_json(
-        "STT/myapikey.json"
-    )
-
-    config = speech.RecognitionConfig(
-        encoding=speech.RecognitionConfig.AudioEncoding.LINEAR16,
-        sample_rate_hertz=RATE,
-        language_code=language_code,
-    )
-
-    streaming_config = speech.StreamingRecognitionConfig(
-        config=config, interim_results=True
-    )
-
-    with MicrophoneStream(RATE, CHUNK) as stream:
-        audio_generator = stream.generator()
-        requests = (
-            speech.StreamingRecognizeRequest(audio_content=content)
-            for content in audio_generator
-        )
-
-        responses = client.streaming_recognize(streaming_config, requests)
-
-        # Now, put the transcription responses to use.
-        listen_print_loop(responses)
-
-
-if __name__ == "__main__":
-    main()
