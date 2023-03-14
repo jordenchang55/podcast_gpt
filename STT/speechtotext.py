@@ -84,12 +84,13 @@ class MicrophoneStream(object):
 
 
 class speechstring:
-    def __init__(self, timeout = 120 , maximum = 200, language_code = "zh"):
+    def __init__(self, timeout=120, maximum=200, language_code="zh"):
         # a BCP-47 language tag "zh" "en-US"
         self.speechstring = None
         self.speechbuffer = ""
         self.timeout = timeout
         self.maximum = maximum
+        self.language_code = language_code
         self.currenttime = time.time()
 
         # add your own google cloud speech to text api key
@@ -97,10 +98,11 @@ class speechstring:
             "STT/myapikey.json"
         )
 
+    def config_stream(self):
         config = speech.RecognitionConfig(
             encoding=speech.RecognitionConfig.AudioEncoding.LINEAR16,
             sample_rate_hertz=RATE,
-            language_code=language_code,
+            language_code=self.language_code,
         )
 
         self.streaming_config = speech.StreamingRecognitionConfig(
@@ -109,6 +111,7 @@ class speechstring:
 
     def start(self):
         while True:
+            self.config_stream()
             with MicrophoneStream(RATE, CHUNK) as stream:
                 audio_generator = stream.generator()
                 requests = (
@@ -182,14 +185,11 @@ class speechstring:
         self.speechbuffer += string
         timeoutflag = time.time() - self.currenttime > self.timeout
         maximumflag = len(self.speechbuffer) > self.maximum
-        print(len(self.speechbuffer))
-        print(time.time() - self.currenttime)
         if timeoutflag or maximumflag:
             self.currenttime = time.time()
             self.speechstring = "toGPT:" + str(string)
             self.speechbuffer = ""
-            print("timeout")
-    
+
     def speechstr(self):
         # check string length
         if self.speechstring is not None:
