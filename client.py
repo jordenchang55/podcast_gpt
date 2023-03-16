@@ -1,4 +1,5 @@
 import json
+import logging
 import time
 
 import openai
@@ -24,20 +25,21 @@ class ChatClient:
         self.frequency_penalty = kwargs['frequency_penalty'] if 'frequency_penalty' in kwargs else 0
         self.presence_penalty = kwargs['presence_penalty'] if 'presence_penalty' in kwargs else 0
 
-    def start(self, stop_event, system_message):
+    def start(self, stop_event, system_message=None):
         """
 
         :param stop_event: the shared event among threads to notify when the loop should stop.
         :param system_message: the message send to chat model to control its behavior. As docs suggested, it might
         be ignored or override by the user input, it is better to set it up in the beginning.
         """
-        print("Chat client started...")
+        logging.info("Chat client started...")
         if system_message:
             self._add_input(system_message, role='system')
         while True:
             if stop_event.is_set():
                 break
             if self._buffer.is_ready_dump():
+                logging.debug("Buffer is ready")
                 self._add_input(self._buffer.dump())
                 self._generate_response()
             time.sleep(0.1)

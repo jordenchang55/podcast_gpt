@@ -1,14 +1,13 @@
 # speech to text by google
 from __future__ import division
 
+import queue
 import re
 import sys
 import time
 
-from google.cloud import speech
-
 import pyaudio
-import queue
+from google.cloud import speech
 
 # Audio recording parameters
 RATE = 16000
@@ -18,7 +17,7 @@ CHUNK = int(RATE / 10)  # 100ms
 class MicrophoneStream(object):
     """Opens a recording stream as a generator yielding the audio chunks."""
 
-    def __init__(self, rate, chunk):
+    def __init__(self, rate=RATE, chunk=CHUNK):
         self._rate = rate
         self._chunk = chunk
 
@@ -81,6 +80,9 @@ class MicrophoneStream(object):
                     break
 
             yield b"".join(data)
+
+    def get_sample_rate(self):
+        return self._rate
 
 
 class speechstring:
@@ -206,6 +208,6 @@ class speechstring:
         else:
             sendstring = "test"
         return sendstring
-    
+
     def blockflag(self, status):
         self.block = status
