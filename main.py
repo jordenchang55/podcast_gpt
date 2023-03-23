@@ -1,7 +1,6 @@
 import logging
 import threading
 
-from STT.speechtotext import MicrophoneStream
 from buffer import SpeechBuffer
 from client import ChatClient
 from constants import EXIT_KEYWORDS
@@ -11,9 +10,12 @@ logger = logging.getLogger()
 logger.setLevel(logging.DEBUG)
 
 handler = logging.StreamHandler()
+fh = logging.FileHandler('test.log', 'w+')
+fh.setLevel(logging.INFO)
 formatter = LoggerFormat(fmt='[%(levelname)s] [%(threadName)s] %(message)s')
 handler.setFormatter(formatter)
 logger.addHandler(handler)
+logger.addHandler(fh)
 
 
 def read_response(client: ChatClient, stop_event):
@@ -27,8 +29,7 @@ def read_response(client: ChatClient, stop_event):
 
 def main():
     stop_event = threading.Event()
-    mic_source = MicrophoneStream()
-    buffer = SpeechBuffer(mic_source, stop_event, timeout=15)
+    buffer = SpeechBuffer(stop_event, timeout=15)
     chat_client = ChatClient(buffer, frequency_penalty=0.1, presence_penalty=0.2)
 
     with open('./resources/podcast_setup_prompt.txt', 'r') as f:
