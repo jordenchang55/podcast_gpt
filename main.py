@@ -31,10 +31,12 @@ def main():
     buffer = SpeechBuffer(mic_source, stop_event, timeout=15)
     chat_client = ChatClient(buffer, frequency_penalty=0.1, presence_penalty=0.2)
 
+    with open('./resources/podcast_setup_prompt.txt', 'r') as f:
+        prompt = f.read()
     background_thread = threading.Thread(name='background', target=chat_client.start,
                                          kwargs={
                                              "stop_event": stop_event,
-                                             # "system_message": "first_message"
+                                             "system_message": prompt
                                          })
     background_thread.start()
 
