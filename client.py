@@ -1,10 +1,13 @@
 import json
 import logging
 import time
+from threading import Event
 
 import openai
+import speech_recognition as sr
 
-from buffer import Buffer
+from buffer import Buffer, TestBuffer
+from constants import DEFAULT_CHUNK, DEFAULT_SAMPLE_RATE, EXIT_KEYWORDS
 
 with open('resources/openai_key.json') as f:
     data = json.load(f)
@@ -25,7 +28,7 @@ class ChatClient:
         self.frequency_penalty = kwargs['frequency_penalty'] if 'frequency_penalty' in kwargs else 0
         self.presence_penalty = kwargs['presence_penalty'] if 'presence_penalty' in kwargs else 0
 
-    def start(self, stop_event, system_message=None):
+    def start(self, stop_event: Event, system_message=None):
         """
 
         :param stop_event: the shared event among threads to notify when the loop should stop.
@@ -88,3 +91,52 @@ class ChatClient:
 
         print("Response in %.2f seconds: %s" % ((time.time() - start_time), res))
         self._staged_response = res['choices'][0]['message']['content'].strip()
+
+
+class MicClient:
+    def __init__(self, buffer: Buffer, pause_timeout=None, sample_rate=DEFAULT_SAMPLE_RATE, chunk=DEFAULT_CHUNK):
+        self._buffer = buffer
+        self._stop_listen_event = Event()
+        self._sample_rate = sample_rate
+        self._chunk = chunk
+        self._pause_timeout = pause_timeout
+
+        self._stop_listening = None
+
+    def _callback(self, recognizer, audio):
+        try:
+            # for testing purposes, we're just using the default API key
+            # to use another API key, use `r.recognize_google(audio, key="GOOGLE_SPEECH_RECOGNITION_API_KEY")`
+            # instead of `r.recognize_google(audio)`
+            text = recognizer.recognize_google(audio, language="zh-TW")
+            logging.info("[Mic] - %s" % text)
+            if text in EXIT_KEYWORDS:
+                self.stop()
+                logging.debug("Heard exit keywords. Exiting...")
+                return
+            self._buffer.add_text(text)
+        except sr.UnknownValueError:
+            logging.debug("Could not understand audio")
+        except sr.RequestError as e:
+            logging.debug("Could not request results from Google Speech Recognition service; {0}".format(e))
+
+    def start(self):
+        logging.debug("Start taking response from mic...")
+        r = sr.Recognizer()
+        mic = sr.Microphone()
+
+        with mic as source:
+            r.adjust_for_ambient_noise(source)
+        self._stop_listening = r.listen_in_background(mic, callback=self._callback,
+                                                      phrase_time_limit=self._pause_timeout)
+
+    def stop(self):
+        self._stop_listening()
+
+
+if __name__ == '__main__':
+    test_buffer = TestBuffer()
+    client = MicClient(test_buffer)
+    client.start()
+    while True:
+        time.sleep(0.1)

@@ -9,15 +9,13 @@ import time
 import pyaudio
 from google.cloud import speech
 
-# Audio recording parameters
-RATE = 16000
-CHUNK = int(RATE / 10)  # 100ms
+from constants import DEFAULT_SAMPLE_RATE, DEFAULT_CHUNK
 
 
 class MicrophoneStream(object):
     """Opens a recording stream as a generator yielding the audio chunks."""
 
-    def __init__(self, rate=RATE, chunk=CHUNK):
+    def __init__(self, rate=DEFAULT_SAMPLE_RATE, chunk=DEFAULT_CHUNK):
         self._rate = rate
         self._chunk = chunk
 
@@ -103,7 +101,7 @@ class speechstring:
 
         config = speech.RecognitionConfig(
             encoding=speech.RecognitionConfig.AudioEncoding.LINEAR16,
-            sample_rate_hertz=RATE,
+            sample_rate_hertz=DEFAULT_SAMPLE_RATE,
             language_code=self.language_code,
         )
 
@@ -114,7 +112,7 @@ class speechstring:
     def start(self):
         while True:
             if self.block == False:
-                with MicrophoneStream(RATE, CHUNK) as stream:
+                with MicrophoneStream(DEFAULT_SAMPLE_RATE, DEFAULT_CHUNK) as stream:
                     audio_generator = stream.generator()
                     requests = (
                         speech.StreamingRecognizeRequest(audio_content=content)

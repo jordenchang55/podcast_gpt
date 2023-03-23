@@ -1,8 +1,9 @@
 import logging
 import threading
+import time
 
-from buffer import SpeechBuffer
-from client import ChatClient
+from buffer import SpeechBuffer, TestBuffer
+from client import ChatClient, MicClient
 from constants import EXIT_KEYWORDS
 from logger import LoggerFormat
 
@@ -27,6 +28,15 @@ def read_response(client: ChatClient, stop_event):
             logging.info("[GPT] - %s", client.take_response())
 
 
+def test():
+    buffer = TestBuffer()
+    mic_client = MicClient(buffer)
+    mic_client.start()
+    while True:
+        time.sleep(5)
+        logging.debug("Buffer: %s" % buffer.dump())
+
+
 def main():
     stop_event = threading.Event()
     buffer = SpeechBuffer(stop_event, timeout=15)
@@ -48,8 +58,8 @@ def main():
                  "1. type 'history' to list the current conversation\n"
                  "2. type %s to finish", EXIT_KEYWORDS)
 
-    listening_thread = threading.Thread(name="listening", target=buffer.start)
-    listening_thread.start()
+    mic_client = MicClient(buffer)
+    mic_client.start()
 
     while True:
         try:
@@ -64,9 +74,9 @@ def main():
             stop_event.set()
             break
 
+    mic_client.stop()
     response_thread.join()
     background_thread.join()
-    listening_thread.join()
 
 
 if __name__ == '__main__':
