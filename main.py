@@ -2,7 +2,9 @@ import logging
 import threading
 import time
 
-from buffer import SpeechBuffer, TestBuffer
+# from buffer import SpeechBuffer
+from STT.buffer import Buffer
+from STT.speechtotext import SpeechClient
 from client import ChatClient, MicClient
 from constants import EXIT_KEYWORDS
 from logger import LoggerFormat
@@ -29,12 +31,17 @@ def read_response(client: ChatClient, stop_event):
 
 
 def test():
-    buffer = TestBuffer()
-    mic_client = MicClient(buffer)
-    mic_client.start()
+    speech_buffer = Buffer()
+    speech_client = SpeechClient(speech_buffer, timeout=5, maximum=30)
+    block_event = threading.Event()
+    speech_thread = threading.Thread(name='speech', target=speech_client.start,
+                                         kwargs={
+                                             "block_event": block_event
+                                         })
+    speech_thread.start()
     while True:
-        time.sleep(5)
-        logging.debug("Buffer: %s" % buffer.dump())
+        if speech_buffer.is_ready_dump():
+            logging.debug("Buffer: %s" % speech_buffer.get_string())
 
 
 def main():
@@ -80,4 +87,4 @@ def main():
 
 
 if __name__ == '__main__':
-    main()
+    test()
