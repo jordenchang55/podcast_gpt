@@ -1,14 +1,14 @@
 # speech to text by google
 from __future__ import division
 
+import os
 import re
+import sys
 import time
-import logging
-from google.cloud import speech
 from threading import Event
 
-import os
-import sys
+from google.cloud import speech
+
 dir_path = os.path.dirname(os.path.abspath(__file__))
 sys.path.append(dir_path)
 from buffer import Buffer
@@ -25,7 +25,7 @@ class SpeechClient:
 
         # add your own google cloud speech to text api key
         self.client = speech.SpeechClient.from_service_account_json(
-            "STT/myapikey.json"
+            "app/STT/myapikey.json"
         )
 
         config = speech.RecognitionConfig(

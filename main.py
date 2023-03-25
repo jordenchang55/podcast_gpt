@@ -1,13 +1,12 @@
 import logging
 import threading
-import time
 
-# from buffer import SpeechBuffer
-from STT.buffer import Buffer
-from STT.speechtotext import SpeechClient
-from client import ChatClient, MicClient
-from constants import EXIT_KEYWORDS
-from logger import LoggerFormat
+from app.STT.buffer import Buffer
+from app.STT.speechtotext import SpeechClient
+from app.buffer import SpeechBuffer
+from app.client import ChatClient, MicClient
+from app.constants import EXIT_KEYWORDS
+from app.logger import LoggerFormat
 
 logger = logging.getLogger()
 logger.setLevel(logging.DEBUG)
@@ -49,7 +48,7 @@ def main():
     buffer = SpeechBuffer(stop_event, timeout=15)
     chat_client = ChatClient(buffer, frequency_penalty=0.1, presence_penalty=0.2)
 
-    with open('./resources/podcast_setup_prompt.txt', 'r') as f:
+    with open('app/resources/podcast_setup_prompt.txt', 'r') as f:
         prompt = f.read()
     background_thread = threading.Thread(name='background', target=chat_client.start,
                                          kwargs={

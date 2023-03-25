@@ -1,15 +1,17 @@
 import json
 import logging
+import os
 import time
 from threading import Event
 
 import openai
 import speech_recognition as sr
 
-from buffer import Buffer, TestBuffer
-from constants import DEFAULT_CHUNK, DEFAULT_SAMPLE_RATE, EXIT_KEYWORDS
+from .buffer import Buffer
+from .constants import DEFAULT_CHUNK, DEFAULT_SAMPLE_RATE, EXIT_KEYWORDS
 
-with open('resources/openai_key.json') as f:
+print("path", os.getcwd())
+with open('app/resources/openai_key.json') as f:
     data = json.load(f)
     openai.api_key = data['GPT-api-key']
 
@@ -132,11 +134,3 @@ class MicClient:
 
     def stop(self):
         self._stop_listening()
-
-
-if __name__ == '__main__':
-    test_buffer = TestBuffer()
-    client = MicClient(test_buffer)
-    client.start()
-    while True:
-        time.sleep(0.1)
