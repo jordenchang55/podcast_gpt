@@ -18,12 +18,14 @@ class SpeechClient:
         self._audio_config = tts.AudioConfig(audio_encoding=tts.AudioEncoding.LINEAR16)
 
     def speak_to_file(self, text, filename):
+        tts_input = tts.SynthesisInput()
+        tts_input.text = text
         response = self.tts_client.synthesize_speech(
-            input=text,
+            input=tts_input,
             voice=self._voice_params,
             audio_config=self._audio_config,
         )
-
+        print(f"Response: {response}")
         with open(filename, "wb") as out:
             out.write(response.audio_content)
             print(f'Generated speech saved to "{filename}"')
