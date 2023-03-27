@@ -2,7 +2,8 @@ import logging
 import threading
 
 from app.STT.buffer import Buffer
-from app.STT.speechtotext import SpeechClient
+from app.STT.speechtotext import ListenClient
+from app.TTS.texttospeech import SpeechClient
 from app.buffer import SpeechBuffer
 from app.client import ChatClient, MicClient
 from app.constants import EXIT_KEYWORDS
@@ -30,17 +31,21 @@ def read_response(client: ChatClient, stop_event):
 
 
 def test():
-    speech_buffer = Buffer()
-    speech_client = SpeechClient(speech_buffer, timeout=5, maximum=30)
+    listen_buffer = Buffer()
+    listen_client = ListenClient(listen_buffer, timeout=5, maximum=30)
     block_event = threading.Event()
-    speech_thread = threading.Thread(name='speech', target=speech_client.start,
+    listen_thread = threading.Thread(name='speech', target=listen_client.start,
                                          kwargs={
                                              "block_event": block_event
                                          })
-    speech_thread.start()
+    listen_thread.start()
+
+    speech_client = SpeechClient()
     while True:
-        if speech_buffer.is_ready_dump():
-            logging.debug("Buffer: %s" % speech_buffer.get_string())
+        if listen_buffer.is_ready_dump():
+            speech_str = listen_buffer.get_string()
+            logging.debug("Buffer: %s" % speech_str)
+            speech_client.speak_to_file( speech_str, "test.wav")
 
 
 def main():

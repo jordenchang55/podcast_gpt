@@ -15,7 +15,7 @@ from buffer import Buffer
 from microphone import MicrophoneStream
 from mic_constants import DEFAULT_SAMPLE_RATE, DEFAULT_CHUNK
 
-class SpeechClient:
+class ListenClient:
     def __init__(self, buffer: Buffer, timeout=120, maximum=200, language_code="zh"):
         # a BCP-47 language tag "zh" "en-US"
         self.speechbuffer = buffer
