@@ -2,6 +2,19 @@
   text-align: center;
 }
 
+#text-container {
+  margin: 40px 0;
+  height: 70vh;
+  border-radius: 10px;
+  background-color: #f5f5f5;
+  overflow-y: scroll;
+}
+
+#button-container {
+  align-items: center;
+  justify-content: center;
+}
+
 .App-logo {
   height: 40vmin;
   pointer-events: none;
