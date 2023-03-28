@@ -14,7 +14,7 @@ from playsound import playsound
 class SpeechClient:
     def __init__(self, language_code="en-US", voice_name="en-US-Studio-O"):
         self.tts_client = tts.TextToSpeechClient.from_service_account_file(
-            "app/STT/myapikey.json"
+            "app/resources/myapikey.json"
         )
         self._voice_params = tts.VoiceSelectionParams()
         self._voice_params.language_code = language_code

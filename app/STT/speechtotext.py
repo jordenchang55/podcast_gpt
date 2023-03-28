@@ -25,7 +25,7 @@ class ListenClient:
 
         # add your own google cloud speech to text api key
         self.client = speech.SpeechClient.from_service_account_json(
-            "app/STT/myapikey.json"
+            "app/resources/myapikey.json"
         )
 
         config = speech.RecognitionConfig(
