@@ -30,6 +30,7 @@ class TestBuffer(Buffer):
 
     def add_text(self, text: str):
         self.text += text
+        self.is_ready = True
 
     def is_ready_dump(self) -> bool:
         return self.is_ready
@@ -39,9 +40,6 @@ class TestBuffer(Buffer):
         self.text = ""
         self.is_ready = False
         return dump_text
-
-    def set_ready_dump(self, is_ready: bool):
-        self.is_ready = is_ready
 
 
 class SpeechBuffer(Buffer):
