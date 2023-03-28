@@ -1,31 +1,31 @@
 import io
-import os
-import sys
+import logging
 
 import google.cloud.texttospeech as tts
 import sounddevice as sd
 import soundfile as sf
 from playsound import playsound
 
+
 # dir_path = os.path.dirname(os.path.abspath(__file__))
 # sys.path.append(dir_path)
 
 
 class SpeechClient:
-    def __init__(self):
+    def __init__(self, language_code="en-US", voice_name="en-US-Studio-O"):
         self.tts_client = tts.TextToSpeechClient.from_service_account_file(
             "app/STT/myapikey.json"
         )
-        self._voice_params = tts.VoiceSelectionParams(
-            language_code="en-US", name="en-US-Studio-O"
-        )
-        self._audio_config = tts.AudioConfig(audio_encoding=tts.AudioEncoding.LINEAR16)
+        self._voice_params = tts.VoiceSelectionParams()
+        self._voice_params.language_code = language_code
+        self._voice_params.name = voice_name
+
+        self._audio_config = tts.AudioConfig()
+        self._audio_config.audio_encoding = tts.AudioEncoding.LINEAR16
 
     def speak(self, text):
-        # TODO: No sound here
         data = self._get_speech_data(text)
         sound_data, samplerate = sf.read(io.BytesIO(data))
-        print(sound_data)
         sd.play(sound_data, samplerate=samplerate)
         sd.wait()
 
@@ -33,7 +33,7 @@ class SpeechClient:
         data = self._get_speech_data(text)
         with open(filename, "wb") as out:
             out.write(data)
-            print(f'Generated speech saved to "{filename}"')
+            logging.debug(f'Generated speech saved to "{filename}"')
             playsound(filename)
 
     def _get_speech_data(self, text):
