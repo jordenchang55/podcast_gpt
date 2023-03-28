@@ -9,14 +9,16 @@ from threading import Event
 
 from google.cloud import speech
 
+from app.STT.buffer import STTBuffer
+from mic_constants import DEFAULT_SAMPLE_RATE, DEFAULT_CHUNK
+from microphone import MicrophoneStream
+
 dir_path = os.path.dirname(os.path.abspath(__file__))
 sys.path.append(dir_path)
-from buffer import Buffer
-from microphone import MicrophoneStream
-from mic_constants import DEFAULT_SAMPLE_RATE, DEFAULT_CHUNK
+
 
 class ListenClient:
-    def __init__(self, buffer: Buffer, timeout=120, maximum=200, language_code="zh"):
+    def __init__(self, buffer: STTBuffer, timeout=120, maximum=200, language_code="zh"):
         # a BCP-47 language tag "zh" "en-US"
         self.speechbuffer = buffer
         self.timeout = timeout
@@ -118,4 +120,3 @@ class ListenClient:
                     break
 
                 num_chars_printed = 0
-        
