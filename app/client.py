@@ -12,7 +12,7 @@ import openai
 import speech_recognition as sr
 import websockets
 
-from .buffer import Buffer
+from app.buffer import Buffer
 from .constants import DEFAULT_CHUNK, DEFAULT_SAMPLE_RATE, EXIT_KEYWORDS
 
 print("path", os.getcwd())
@@ -27,6 +27,8 @@ class ChatClient:
         self._staged_response = ""
         # The history will save all the conversation from user and the adopted bot response.
         self._message_history = []
+        self._running_thread = None
+        self._stop_event = None
 
         # Other settings for GPT model
         self.model = kwargs['model'] if 'model' in kwargs else "gpt-3.5-turbo"
@@ -35,24 +37,22 @@ class ChatClient:
         self.frequency_penalty = kwargs['frequency_penalty'] if 'frequency_penalty' in kwargs else 0
         self.presence_penalty = kwargs['presence_penalty'] if 'presence_penalty' in kwargs else 0
 
-    def start(self, stop_event: Event, system_message=None):
+    def start(self, stop_event: Event, system_message: str = None, callback: Callable[[str], None] = None):
         """
 
         :param stop_event: the shared event among threads to notify when the loop should stop.
         :param system_message: the message send to chat model to control its behavior. As docs suggested, it might
         be ignored or override by the user input, it is better to set it up in the beginning.
+        :param callback: pass the message returned by chatGPT.
         """
         logging.info("Chat client started...")
+        self._running_thread = threading.Thread(name="chat", target=self._start, args=[callback])
+        self._stop_event = stop_event
+
         if system_message:
             self._add_input(system_message, role='system')
-        while True:
-            if stop_event.is_set():
-                break
-            if self._buffer.is_ready_dump():
-                logging.debug("Buffer is ready")
-                self._add_input(self._buffer.dump())
-                self._generate_response()
-            time.sleep(0.1)
+
+        self._running_thread.start()
 
     def peek_response(self):
         return self._staged_response
@@ -76,16 +76,28 @@ class ChatClient:
         self._staged_response = ""
 
     def print_history(self):
-        print("=" * 10 + "History" + "=" * 10)
+        logging.debug("=" * 10 + "History" + "=" * 10)
         for row in self._message_history:
-            print("%s: %s" % (row['role'], row['content']))
-        print("=" * 30)
+            logging.debug("%s: %s" % (row['role'], row['content']))
+        logging.debug("=" * 30)
 
     def _add_input(self, text, role='user'):
         self._message_history.append({
             "role": role,
             "content": text
         })
+
+    def _start(self, callback):
+        while True:
+            if self._stop_event.is_set():
+                break
+            if self._buffer.is_ready_dump():
+                logging.debug("Buffer is ready")
+                self._add_input(self._buffer.dump())
+                res = self._generate_response()
+                self._staged_response = res
+                callback(res)
+            time.sleep(0.3)
 
     def _generate_response(self):
         start_time = time.time()
@@ -97,7 +109,7 @@ class ChatClient:
         )
 
         print("Response in %.2f seconds: %s" % ((time.time() - start_time), res))
-        self._staged_response = res['choices'][0]['message']['content'].strip()
+        return res['choices'][0]['message']['content'].strip()
 
 
 class MicClient:
