@@ -127,6 +127,7 @@ class ListenClient:
                     self.listen_print_loop(responses)
                 except Exception as exception:
                     print("stream too long, restart")
+                    print("exception: ", exception)
                 if block_event.is_set():
                     break
             time.sleep(1)

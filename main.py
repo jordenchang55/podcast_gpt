@@ -1,7 +1,7 @@
 import logging
 import threading
 
-from app.STT.buffer import Buffer
+from app.STT.buffer import STTBuffer
 from app.STT.speechtotext import ListenClient
 from app.TTS.texttospeech import SpeechClient
 from app.buffer import SpeechBuffer
@@ -31,7 +31,7 @@ def read_response(client: ChatClient, stop_event):
 
 
 def test():
-    listen_buffer = Buffer()
+    listen_buffer = STTBuffer()
     listen_client = ListenClient(listen_buffer, timeout=5, maximum=30)
     block_event = threading.Event()
     listen_thread = threading.Thread(name='speech', target=listen_client.start,
@@ -45,7 +45,7 @@ def test():
         if listen_buffer.is_ready_dump():
             speech_str = listen_buffer.get_string()
             logging.debug("Buffer: %s" % speech_str)
-            speech_client.speak_to_file( speech_str, "test.wav")
+            speech_client.speak( speech_str)
 
 
 def main():
