@@ -41,7 +41,7 @@ function App() {
   return (
     <Container maxWidth="lg">
       <div id="text-container">
-        <Typography variant="body1" component="body1">
+        <Typography variant="body1" >
           {text || 'Waiting for some response...'}
         </Typography>
       </div>
