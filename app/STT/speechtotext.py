@@ -123,7 +123,10 @@ class ListenClient:
 
                 # Now, put the transcription responses to use.
                 self.currenttime = time.time()
-                self.listen_print_loop(responses)
+                try:
+                    self.listen_print_loop(responses)
+                except Exception as exception:
+                    print("stream too long, restart")
                 if block_event.is_set():
                     break
             time.sleep(1)
