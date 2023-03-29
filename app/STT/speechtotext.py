@@ -4,14 +4,15 @@ from __future__ import division
 import os
 import re
 import sys
+import threading
 import time
 from threading import Event
 
 from google.cloud import speech
 
 from app.STT.buffer import STTBuffer
-from mic_constants import DEFAULT_SAMPLE_RATE, DEFAULT_CHUNK
-from microphone import MicrophoneStream
+from .mic_constants import DEFAULT_SAMPLE_RATE, DEFAULT_CHUNK
+from .microphone import MicrophoneStream
 
 dir_path = os.path.dirname(os.path.abspath(__file__))
 sys.path.append(dir_path)
@@ -24,6 +25,7 @@ class ListenClient:
         self.timeout = timeout
         self.maximum = maximum
         self.language_code = language_code
+        self._running_thread = None
 
         # add your own google cloud speech to text api key
         self.client = speech.SpeechClient.from_service_account_json(
@@ -41,25 +43,11 @@ class ListenClient:
         )
 
     def start(self, block_event: Event):
-        while True:
-            if not block_event.is_set():
-                with MicrophoneStream(DEFAULT_SAMPLE_RATE, DEFAULT_CHUNK) as stream:
-                    audio_generator = stream.generator()
-                    requests = (
-                        speech.StreamingRecognizeRequest(audio_content=content)
-                        for content in audio_generator
-                    )
+        self._running_thread = threading.Thread(name='listening', target=self._start, args=[block_event])
+        self._running_thread.start()
 
-                    responses = self.client.streaming_recognize(
-                        self.streaming_config, requests)
-
-                    # Now, put the transcription responses to use.
-                    self.currenttime = time.time()
-                    self.listen_print_loop(responses)
-                    if block_event.is_set():
-                        break
-            else:
-                time.sleep(1)
+    def stop(self):
+        self._running_thread.join()
 
     def listen_print_loop(self, responses):
         """Iterates through server responses and prints them.
@@ -106,7 +94,7 @@ class ListenClient:
 
             else:
                 finalstring = transcript + overwrite_chars
-                self.speechbuffer.add_string(finalstring)
+                self.speechbuffer.add_text(finalstring)
                 print(finalstring)
                 # If timeout break
                 if time.time() - self.currenttime > self.timeout:
@@ -120,3 +108,22 @@ class ListenClient:
                     break
 
                 num_chars_printed = 0
+
+    def _start(self, block_event):
+        while not block_event.is_set():
+            with MicrophoneStream(DEFAULT_SAMPLE_RATE, DEFAULT_CHUNK) as stream:
+                audio_generator = stream.generator()
+                requests = (
+                    speech.StreamingRecognizeRequest(audio_content=content)
+                    for content in audio_generator
+                )
+
+                responses = self.client.streaming_recognize(
+                    self.streaming_config, requests)
+
+                # Now, put the transcription responses to use.
+                self.currenttime = time.time()
+                self.listen_print_loop(responses)
+                if block_event.is_set():
+                    break
+            time.sleep(1)

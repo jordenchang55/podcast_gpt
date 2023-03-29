@@ -54,6 +54,9 @@ class ChatClient:
 
         self._running_thread.start()
 
+    def stop(self):
+        self._running_thread.join()
+
     def peek_response(self):
         return self._staged_response
 
