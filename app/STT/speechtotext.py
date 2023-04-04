@@ -18,7 +18,7 @@ from .microphone import MicrophoneStream
 dir_path = os.path.dirname(os.path.abspath(__file__))
 sys.path.append(dir_path)
 
-with open('app/resources/openai_key.json') as f:
+with open('app/resources/api_key.json') as f:
     data = json.load(f)
 
 
@@ -33,7 +33,7 @@ class ListenClient:
 
         # add your own google cloud speech to text api key
         self.client = speech.SpeechClient(client_options={
-            'api_key': data['STT-api-key']
+            'api_key': data['Google-api-key']
         })
 
         diarization_config = speech.SpeakerDiarizationConfig(
