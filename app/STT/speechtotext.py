@@ -1,6 +1,7 @@
 # speech to text by google
 from __future__ import division
 
+import json
 import os
 import re
 import sys
@@ -17,6 +18,9 @@ from .microphone import MicrophoneStream
 dir_path = os.path.dirname(os.path.abspath(__file__))
 sys.path.append(dir_path)
 
+with open('app/resources/openai_key.json') as f:
+    data = json.load(f)
+
 
 class ListenClient:
     def __init__(self, buffer: STTBuffer, timeout=120, maximum=200, language_code="zh"):
@@ -28,9 +32,9 @@ class ListenClient:
         self._running_thread = None
 
         # add your own google cloud speech to text api key
-        self.client = speech.SpeechClient.from_service_account_json(
-            "app/resources/myapikey.json"
-        )
+        self.client = speech.SpeechClient(client_options={
+            'api_key': data['STT-api-key']
+        })
 
         diarization_config = speech.SpeakerDiarizationConfig(
             enable_speaker_diarization=True,
