@@ -1,3 +1,4 @@
+import logging
 from app.buffer import Buffer
 
 
@@ -22,6 +23,7 @@ class STTBuffer(Buffer):
         index = self.output_index(number)
         response = self.buffer[index]
         self.buffer[index] = None
+        logging.debug("Buffer: %s" % response)
         return response
 
     def dump(self) -> str:

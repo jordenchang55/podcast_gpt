@@ -16,7 +16,7 @@ with open('app/resources/api_key.json') as f:
 
 class SpeechClient:
     def __init__(self, language_code="cmn-TW", voice_name="cmn-TW-Standard-A"):
-        # cmn-TW en-US
+        # cmn-TW cmn-TW-Standard-A // en-US en-US-Neural2-F
         self.tts_client = tts.TextToSpeechClient(client_options={
             'api_key': data['Google-api-key']
         })
