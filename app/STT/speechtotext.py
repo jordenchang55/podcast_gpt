@@ -32,10 +32,17 @@ class ListenClient:
             "app/resources/myapikey.json"
         )
 
+        diarization_config = speech.SpeakerDiarizationConfig(
+            enable_speaker_diarization=True,
+            min_speaker_count=3,
+            max_speaker_count=3,
+        )
+
         config = speech.RecognitionConfig(
             encoding=speech.RecognitionConfig.AudioEncoding.LINEAR16,
             sample_rate_hertz=DEFAULT_SAMPLE_RATE,
             language_code=self.language_code,
+            diarization_config=diarization_config
         )
 
         self.streaming_config = speech.StreamingRecognitionConfig(
