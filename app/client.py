@@ -16,7 +16,7 @@ from app.buffer import Buffer
 from .constants import DEFAULT_CHUNK, DEFAULT_SAMPLE_RATE, EXIT_KEYWORDS
 
 print("path", os.getcwd())
-with open('app/resources/openai_key.json') as f:
+with open('app/resources/api_key.json') as f:
     data = json.load(f)
     openai.api_key = data['GPT-api-key']
 
