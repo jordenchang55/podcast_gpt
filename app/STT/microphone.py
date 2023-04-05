@@ -55,6 +55,10 @@ class MicrophoneStream(object):
         self._buff.put(in_data)
         return None, pyaudio.paContinue
 
+    def close(self):
+        self.closed = True
+        self._audio_stream.close()
+
     def generator(self):
         while not self.closed:
             # Use a blocking get() to ensure there's at least one chunk of

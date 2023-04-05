@@ -2,6 +2,7 @@
 from __future__ import division
 
 import json
+import logging
 import os
 import re
 import sys
@@ -30,6 +31,7 @@ class ListenClient:
         self.language_code = language_code
         self._running_thread = None
         self._stop_event = threading.Event()
+        self._stream = None
 
         # add your own google cloud speech to text api key
         self.client = speech.SpeechClient(client_options={
@@ -60,6 +62,8 @@ class ListenClient:
         self._running_thread.start()
 
     def stop(self):
+        if self._stream:
+            self._stream.close()
         self._stop_event.set()
         # self._running_thread.join()
 
@@ -103,8 +107,9 @@ class ListenClient:
             if self._stop_event.is_set():
                 finalstring = transcript + overwrite_chars
                 self.speechbuffer.add_text(finalstring)
-                print(finalstring)
-                print("_stop_event is set, exiting..")
+                logging.debug("Cut off by stop event, exiting..")
+                logging.debug("Final string: %s" % finalstring)
+
                 break
 
             if not result.is_final:
@@ -115,7 +120,7 @@ class ListenClient:
             else:
                 finalstring = transcript + overwrite_chars
                 self.speechbuffer.add_text(finalstring)
-                print(finalstring)
+                logging.debug("Final string: %s" % finalstring)
                 # If timeout break
                 if time.time() - self.currenttime > self.timeout:
                     self.currenttime = time.time()
@@ -124,7 +129,8 @@ class ListenClient:
                 # Exit recognition if any of the transcribed phrases could be
                 # one of our keywords.
                 elif re.search(r"\b(exit|quit)\b", transcript, re.I):
-                    print("Exiting..")
+                    logging.debug("Exiting audio stream by exit keywords..")
+                    self.stop()
                     break
 
                 num_chars_printed = 0
@@ -132,6 +138,7 @@ class ListenClient:
     def _start(self):
         while not self._stop_event.is_set():
             with MicrophoneStream(DEFAULT_SAMPLE_RATE, DEFAULT_CHUNK) as stream:
+                self._stream = stream
                 audio_generator = stream.generator()
                 requests = (
                     speech.StreamingRecognizeRequest(audio_content=content)
@@ -146,6 +153,6 @@ class ListenClient:
                 try:
                     self.listen_print_loop(responses)
                 except Exception as exception:
-                    print("stream too long, restart")
-                    print("exception: ", exception)
-            time.sleep(1)
+                    logging.debug("Stream exception: ", exception)
+            logging.debug("Stream closed. It will restart shortly.")
+            time.sleep(0.1)
