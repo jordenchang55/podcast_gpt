@@ -81,6 +81,6 @@ class WebSocketClient:
     async def _start_server(self):
         self._stop_future = asyncio.Future()
 
-        async with websockets.serve(self._handle_websocket, "localhost", 8000):
+        async with websockets.serve(self._handle_websocket, "0.0.0.0", 8000):
             logging.debug("WebSocket server listening on ws://localhost:8000")
             await self._stop_future
