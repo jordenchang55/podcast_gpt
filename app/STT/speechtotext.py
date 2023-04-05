@@ -65,7 +65,6 @@ class ListenClient:
         if self._stream:
             self._stream.close()
         self._stop_event.set()
-        # self._running_thread.join()
 
     def listen_print_loop(self, responses):
         """Iterates through server responses and prints them.
