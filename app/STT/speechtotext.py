@@ -100,10 +100,16 @@ class ListenClient:
             # some extra spaces to overwrite the previous result
             overwrite_chars = " " * (num_chars_printed - len(transcript))
 
+            if self._stop_event.is_set():
+                finalstring = transcript + overwrite_chars
+                self.speechbuffer.add_text(finalstring)
+                print(finalstring)
+                print("_stop_event is set, exiting..")
+                break
+
             if not result.is_final:
                 sys.stdout.write(transcript + overwrite_chars + "\r")
                 sys.stdout.flush()
-
                 num_chars_printed = len(transcript)
 
             else:
