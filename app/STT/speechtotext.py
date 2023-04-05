@@ -7,7 +7,6 @@ import re
 import sys
 import threading
 import time
-from threading import Event
 
 from google.cloud import speech
 
@@ -30,6 +29,7 @@ class ListenClient:
         self.maximum = maximum
         self.language_code = language_code
         self._running_thread = None
+        self._stop_event = threading.Event()
 
         # add your own google cloud speech to text api key
         self.client = speech.SpeechClient(client_options={
@@ -53,12 +53,15 @@ class ListenClient:
             config=config, interim_results=True
         )
 
-    def start(self, block_event: Event):
-        self._running_thread = threading.Thread(name='listening', target=self._start, args=[block_event])
+    def start(self):
+        if self._stop_event.is_set():
+            self._stop_event.clear()
+        self._running_thread = threading.Thread(name='listening', target=self._start)
         self._running_thread.start()
 
     def stop(self):
-        self._running_thread.join()
+        self._stop_event.set()
+        # self._running_thread.join()
 
     def listen_print_loop(self, responses):
         """Iterates through server responses and prints them.
@@ -120,8 +123,8 @@ class ListenClient:
 
                 num_chars_printed = 0
 
-    def _start(self, block_event):
-        while not block_event.is_set():
+    def _start(self):
+        while not self._stop_event.is_set():
             with MicrophoneStream(DEFAULT_SAMPLE_RATE, DEFAULT_CHUNK) as stream:
                 audio_generator = stream.generator()
                 requests = (
@@ -139,6 +142,4 @@ class ListenClient:
                 except Exception as exception:
                     print("stream too long, restart")
                     print("exception: ", exception)
-                if block_event.is_set():
-                    break
             time.sleep(1)

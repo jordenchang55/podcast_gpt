@@ -38,7 +38,7 @@ class App(WebSocketCallback):
             self.stop_event.clear()
         with open('app/resources/podcast_setup_prompt.txt', 'r') as f:
             prompt = f.read()
-        self.listen_client.start(self.stop_event)
+        self.listen_client.start()
         self.chat_client.start(self.stop_event, prompt, lambda msg: self._on_gpt_response(msg))
 
     def on_disconnected(self):
@@ -49,7 +49,9 @@ class App(WebSocketCallback):
 
     def on_update(self, event):
         if event['event'] == 'speak':
+            self.listen_client.stop()
             self.speech_client.speak(event['text'])
+            self.listen_client.start()
 
     def _on_gpt_response(self, text):
         self.web_socket_client.send(text)
