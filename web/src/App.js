@@ -20,7 +20,7 @@ function App() {
       console.log(messageEvent)
       const jsonPayload = JSON.parse(messageEvent.data)
       if (jsonPayload.event === 'text_update') {
-        setText(jsonPayload.text);
+        setText(jsonPayload.message);
       }
     }
   });
