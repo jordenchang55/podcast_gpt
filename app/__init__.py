@@ -49,6 +49,7 @@ class App(WebSocketCallback):
 
     def on_update(self, event):
         if event['event'] == 'speak':
+            self.chat_client.add_actual_response(event['text'])
             self.listen_client.stop()
             self.speech_client.speak(event['text'])
             self.listen_client.start()

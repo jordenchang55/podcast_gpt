@@ -17,7 +17,6 @@ with open('app/resources/api_key.json') as f:
 class ChatClient:
     def __init__(self, buffer: Buffer, **kwargs):
         self._buffer = buffer
-        self._staged_response = ""
         # The history will save all the conversation from user and the adopted bot response.
         self._message_history = []
         self._running_thread = None
@@ -50,26 +49,18 @@ class ChatClient:
     def stop(self):
         self._running_thread.join()
 
-    def peek_response(self):
-        return self._staged_response
-
-    def take_response(self):
+    def add_actual_response(self, text):
         """
-        Return the content in the staged response and reset it. If you only want to check the content,
-        use :func:`peek_response` instead. The taken response will be saved into the history so that
-        in the future conversation, the bot will have the context.
+        Add the response chosen by user in to message history so that ChatGPT can get more context in the following
+        conversation.
+
         :return: the staged response.
         """
-        response = self._staged_response
-        self.reset_response()
+        logging.info("[GPT] - %s" % text)
         self._message_history.append({
             "role": "assistant",
-            "content": response
+            "content": text
         })
-        return response
-
-    def reset_response(self):
-        self._staged_response = ""
 
     def print_history(self):
         logging.debug("=" * 10 + "History" + "=" * 10)
@@ -104,5 +95,5 @@ class ChatClient:
             messages=self._message_history
         )
 
-        print("Response in %.2f seconds: %s" % ((time.time() - start_time), res))
+        logging.debug("Response in %.2f seconds: %s" % ((time.time() - start_time), res))
         return res['choices'][0]['message']['content'].strip()
