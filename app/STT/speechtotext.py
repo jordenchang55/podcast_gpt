@@ -108,6 +108,7 @@ class ListenClient:
                 self.speechbuffer.add_text(finalstring)
                 logging.debug("Cut off by stop event, exiting..")
                 logging.debug("Final string: %s" % finalstring)
+                logging.info("[Guest] - %s", finalstring)
 
                 break
 
@@ -120,6 +121,7 @@ class ListenClient:
                 finalstring = transcript + overwrite_chars
                 self.speechbuffer.add_text(finalstring)
                 logging.debug("Final string: %s" % finalstring)
+                logging.info("[Guest] - %s", finalstring)
                 # If timeout break
                 if time.time() - self.currenttime > self.timeout:
                     self.currenttime = time.time()
