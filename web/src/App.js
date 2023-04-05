@@ -1,14 +1,15 @@
 import './App.css';
 import React, {useState} from "react";
-import {Container, Button, Typography, Grid} from '@mui/material';
+import {Container, Button, Typography, Grid, TextField} from '@mui/material';
 import useWebSocket from "react-use-websocket";
 
 
 function App() {
   const [text, setText] = useState('');
+  const [webSocketUrl, setSocketURL] = useState('localhost:8000')
   const {
     sendJsonMessage
-  } = useWebSocket('ws://localhost:8000', {
+  } = useWebSocket(`ws://${webSocketUrl}`, {
     onOpen: () => {
       sendJsonMessage({
         event: "connected"
@@ -42,6 +43,19 @@ function App() {
 
   return (
     <Container maxWidth="lg">
+      <Grid style={{
+        display: 'flex',
+        alignItems: 'center',
+
+      }}>
+        <TextField
+          size="small"
+          onChange={(event) => {
+            setSocketURL(event.target.value)
+          }}
+          value={webSocketUrl}></TextField>
+        <Button style={{margin: 5}} size="small" variant="contained">Switch socket</Button>
+      </Grid>
       <div id="text-container">
         <Typography variant="body1">
           {text || 'Waiting for some response...'}
