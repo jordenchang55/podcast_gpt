@@ -11,12 +11,12 @@ import time
 
 from google.cloud import speech
 
-from app.STT.buffer import STTBuffer
-from .mic_constants import DEFAULT_SAMPLE_RATE, DEFAULT_CHUNK
-from .microphone import MicrophoneStream
-
 dir_path = os.path.dirname(os.path.abspath(__file__))
 sys.path.append(dir_path)
+
+from .buffer import STTBuffer
+from .mic_constants import DEFAULT_SAMPLE_RATE, DEFAULT_CHUNK
+from .microphone import MicrophoneStream
 
 with open('app/resources/api_key.json') as f:
     data = json.load(f)
