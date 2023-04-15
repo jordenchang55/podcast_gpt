@@ -168,6 +168,7 @@ class ListenClient2:
         self._running_thread = None
         self._stop_event = None
         self._time_limit = time_limit
+        self._recognizer = sr.Recognizer()
 
     def start(self):
         logging.info("Start listing")
@@ -183,17 +184,22 @@ class ListenClient2:
             self._stop_event.set()
         if self._running_thread:
             self._running_thread.join()
+        if self._recognition_thread:
+            self._recognition_thread.join()
 
     def _start(self):
-        r = sr.Recognizer()
         while not self._stop_event.is_set():
             with sr.Microphone() as source:
-                audio = r.listen(source, phrase_time_limit=self._time_limit)
-                try:
-                    text = r.recognize_whisper_api(audio, api_key=data['GPT-api-key'])
-                    logging.info("[Guest] - %s" % text)
-                    self._buffer.add_text(text)
-                except sr.UnknownValueError:
-                    logging.warning("Google Speech Recognition could not understand audio")
-                except sr.RequestError as e:
-                    logging.warning("Could not request results from Google Speech Recognition service; {0}".format(e))
+                audio = self._recognizer.listen(source, phrase_time_limit=self._time_limit)
+                self._recognition_thread = threading.Thread(name="recognition", target=self._recognize, args=[audio])
+                self._recognition_thread.start()
+
+    def _recognize(self, audio_data):
+        try:
+            text = self._recognizer.recognize_whisper_api(audio_data, api_key=data['GPT-api-key'])
+            logging.info("[Guest] - %s" % text)
+            self._buffer.add_text(text)
+        except sr.UnknownValueError:
+            logging.warning("Google Speech Recognition could not understand audio")
+        except sr.RequestError as e:
+            logging.warning("Could not request results from Google Speech Recognition service; {0}".format(e))
