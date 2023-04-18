@@ -92,7 +92,6 @@ tensorboard-data-server==0.7.0
 tensorboard-plugin-wit==1.8.1
 tensorflow-addons==0.20.0
 tensorflow-estimator==2.12.0
-tensorflow-macos==2.12.0
 TensorFlowTTS @ git+https://github.com/jordenchang55/TensorFlowTTS.git@99fa9feed959bcd01ecb6097f75f92e7d6cc450e
 termcolor==2.2.0
 TextGrid==1.5
