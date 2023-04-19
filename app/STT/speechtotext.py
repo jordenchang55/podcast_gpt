@@ -9,7 +9,10 @@ import sys
 import threading
 import time
 
+import speech_recognition as sr
 from google.cloud import speech
+
+from ..buffer import Buffer
 
 dir_path = os.path.dirname(os.path.abspath(__file__))
 sys.path.append(dir_path)
@@ -157,3 +160,46 @@ class ListenClient:
                     logging.debug("Stream exception: ", exception)
             logging.debug("Stream closed. It will restart shortly.")
             time.sleep(0.1)
+
+
+class ListenClient2:
+    def __init__(self, buffer: Buffer, time_limit=30):
+        self._buffer = buffer
+        self._running_thread = None
+        self._stop_event = None
+        self._time_limit = time_limit
+        self._recognizer = sr.Recognizer()
+
+    def start(self):
+        logging.info("Start listing")
+        if self._stop_event:
+            self._stop_event.set()
+        self._stop_event = threading.Event()
+        self._running_thread = threading.Thread(name="listen", target=self._start)
+        self._running_thread.start()
+
+    def stop(self):
+        logging.info("Stop listing")
+        if self._stop_event:
+            self._stop_event.set()
+        if self._running_thread:
+            self._running_thread.join()
+        if self._recognition_thread:
+            self._recognition_thread.join()
+
+    def _start(self):
+        while not self._stop_event.is_set():
+            with sr.Microphone() as source:
+                audio = self._recognizer.listen(source, phrase_time_limit=self._time_limit)
+                self._recognition_thread = threading.Thread(name="recognition", target=self._recognize, args=[audio])
+                self._recognition_thread.start()
+
+    def _recognize(self, audio_data):
+        try:
+            text = self._recognizer.recognize_whisper_api(audio_data, api_key=data['GPT-api-key'])
+            logging.info("[Guest] - %s" % text)
+            self._buffer.add_text(text)
+        except sr.UnknownValueError:
+            logging.warning("Google Speech Recognition could not understand audio")
+        except sr.RequestError as e:
+            logging.warning("Could not request results from Google Speech Recognition service; {0}".format(e))
