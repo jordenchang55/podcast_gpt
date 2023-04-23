@@ -1,4 +1,4 @@
-FROM nvidia/cuda:11.7.0-cudnn8-runtime-ubuntu20.04
+FROM nvidia/cuda:11.6.1-cudnn8-runtime-ubuntu20.04
 WORKDIR /docker
 COPY /app/TTS/ttspaddle.py /docker
 # install python 3.10 and pip
@@ -10,7 +10,7 @@ RUN apt-get update && \
     apt-get install -y python3.10 python3-pip libsndfile1
 
 # Install PaddlePaddle
-RUN python3 -m pip install paddlepaddle-gpu==2.4.2.post117 -f https://www.paddlepaddle.org.cn/whl/linux/mkl/avx/stable.html
+RUN python3 -m pip install paddlepaddle-gpu==2.4.2.post116 -f https://www.paddlepaddle.org.cn/whl/linux/mkl/avx/stable.html
 
 # Install Python libraries
 RUN python3 -m pip install pytest-runner && \
