@@ -4,16 +4,18 @@ COPY /app/TTS/ttspaddle.py /docker
 # install python 3.10 and pip
 RUN apt-get update && \
     apt-get install -y software-properties-common && \
-    add-apt-repository -y ppa:deadsnakes/ppa &&
-RUN apt-get update && \
-    apt install -y python3.10 python3-pip
-# install paddlepaddle
-RUN python3 -m pip install paddlepaddle-gpu==2.4.2.post117 -f https://www.paddlepaddle.org.cn/whl/linux/mkl/avx/stable.html \
-    pip install pytest-runner \
-    pip install paddlespeech \
-    pip install playsound \
-    pip install --upgrade numba
-RUN apt-get update && \
-    apt install -y libsndfile1 \
+    apt-get update && \
+    add-apt-repository -y ppa:deadsnakes/ppa && \
+    apt-get update && \
+    apt-get install -y python3.10 python3-pip libsndfile1
+
+# Install PaddlePaddle
+RUN python3 -m pip install paddlepaddle-gpu==2.4.2.post117 -f https://www.paddlepaddle.org.cn/whl/linux/mkl/avx/stable.html
+
+# Install Python libraries
+RUN python3 -m pip install pytest-runner && \
+    python3 -m pip install paddlespeech && \
+    python3 -m pip install playsound && \
+    python3 -m pip install --upgrade numba
 # RUN pip install -r requirements.txt
 CMD ["python3", "ttspaddle.py"]
